@@ -51,7 +51,7 @@ export default function Register() {
         username: data.username,
       });
     } catch (error) {
-      console.log(error);
+      console.log('Erro: ', error);
     }
   }
 
