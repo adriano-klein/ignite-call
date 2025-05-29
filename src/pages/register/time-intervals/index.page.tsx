@@ -8,6 +8,7 @@ import {
 } from '@ignite-ui/react';
 import { Container, Header } from '../styles';
 import {
+  FormError,
   IntervalBox,
   IntervalContainer,
   IntervalDay,
@@ -18,9 +19,28 @@ import { ArrowRight } from 'phosphor-react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { getWeekDays } from '@/src/utils/get-week-days';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form } from '../../home/ClaimUsernameForm/styles';
 
 //NOTE: Formulário --------------------------
-const timeIntervalsSchema = z.object({});
+const timeIntervalsSchema = z.object({
+  intervals: z
+    .array(
+      z.object({
+        weekDay: z.number().min(0).max(6),
+        enabled: z.boolean(),
+        startTime: z.string(),
+        endTime: z.string(),
+      }),
+    )
+    .length(7)
+    .transform((intervals) => intervals.filter((interval) => interval.enabled))
+    .refine((intervals) => intervals.length > 0, {
+      message: 'Pelo menos um intervalo deve ser selecionado.',
+    }),
+});
+
+type TimeIntervalsFormData = z.infer<typeof timeIntervalsSchema>;
 
 export default function TimeIntervals() {
   const {
@@ -30,6 +50,7 @@ export default function TimeIntervals() {
     watch,
     formState: { isSubmitting, errors },
   } = useForm({
+    resolver: zodResolver(timeIntervalsSchema),
     defaultValues: {
       intervals: [
         { weekDay: 0, enabled: false, startTime: '08:00', endTime: '18:00' },
@@ -52,7 +73,9 @@ export default function TimeIntervals() {
   const intervals = watch('intervals');
 
   //Quando o usuário clicar no botão "Próximo passo", o formulário será enviado
-  async function handleFormSubmit() {}
+  async function handleSetTimeIntervals(data: TimeIntervalsFormData) {
+    console.log(data);
+  }
 
   //NOTE: Formulário --------------------------
 
@@ -67,7 +90,7 @@ export default function TimeIntervals() {
         <MultiStep size={4} currentStep={3} />
       </Header>
 
-      <IntervalBox as="form" onSubmit={handleSubmit(handleFormSubmit)}>
+      <IntervalBox as="form" onSubmit={handleSubmit(handleSetTimeIntervals)}>
         <IntervalContainer>
           {fields.map((field, index) => {
             return (
@@ -116,7 +139,12 @@ export default function TimeIntervals() {
             );
           })}
         </IntervalContainer>
-        <Button type="submit">
+
+        {errors.intervals?.root?.message && (
+          <FormError size="sm">{errors.intervals.root?.message}</FormError>
+        )}
+
+        <Button type="submit" disabled={isSubmitting}>
           Próximo passo
           <ArrowRight size={24} />
         </Button>
