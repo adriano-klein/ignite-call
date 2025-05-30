@@ -99,9 +99,12 @@ export default function TimeIntervals() {
   const intervals = watch('intervals');
 
   //Quando o usuário clicar no botão "Próximo passo", o formulário será enviado
-  async function handleSetTimeIntervals(data: TimeIntervalsFormOutput) {
-    const { intervals } = data;
-    await api.post('/users/time-intervals', intervals);
+  async function handleSetTimeIntervals(data: any) {
+    const { intervals } = data as TimeIntervalsFormOutput;
+    console.log('index.page: ', intervals);
+    await api.post('/users/time-intervals', {
+      intervals,
+    });
   }
 
   //NOTE: Formulário --------------------------
