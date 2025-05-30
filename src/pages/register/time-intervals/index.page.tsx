@@ -23,6 +23,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form } from '../../home/ClaimUsernameForm/styles';
 import { endianness } from 'os';
 import { convertTimeStringToMinutes } from '@/src/utils/convert-time-string-to-minutes';
+import { api } from '@/src/lib/axios';
 
 //NOTE: Formulário --------------------------
 const timeIntervalsSchema = z.object({
@@ -99,7 +100,8 @@ export default function TimeIntervals() {
 
   //Quando o usuário clicar no botão "Próximo passo", o formulário será enviado
   async function handleSetTimeIntervals(data: TimeIntervalsFormOutput) {
-    console.log(data);
+    const { intervals } = data;
+    await api.post('/users/time-intervals', intervals);
   }
 
   //NOTE: Formulário --------------------------
