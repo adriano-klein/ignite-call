@@ -1,10 +1,10 @@
 import {
+  Avatar,
   Button,
   Heading,
   MultiStep,
   Text,
   TextArea,
-  TextInput,
 } from '@ignite-ui/react';
 import { ArrowRight } from 'phosphor-react';
 import { useForm } from 'react-hook-form';
@@ -15,6 +15,7 @@ import { FormAnnotation, ProfileBox } from './styles';
 import { useSession } from 'next-auth/react';
 import { unstable_getServerSession } from 'next-auth';
 import { buildNextAuthOptions } from '../../api/auth/[...nextauth].api';
+import { api } from '@/src/lib/axios';
 
 const updateProfileSchema = z.object({
   bio: z.string(),
@@ -26,16 +27,19 @@ export default function UpdateProfile() {
   const {
     register,
     handleSubmit,
-
     formState: { isSubmitting },
   } = useForm<UpdateProfileData>({
     resolver: zodResolver(updateProfileSchema),
   });
-
-  async function handleUpdateProfile(data: UpdateProfileData) {}
-
   const session = useSession();
-  console.log('Session:', session);
+  const router = useRouter();
+
+  async function handleUpdateProfile(data: UpdateProfileData) {
+    await api.put('/users/profile', {
+      bio: data.bio,
+    });
+    await router.push(`/schedule/${session.data?.user.username}`);
+  }
 
   return (
     <Container>
@@ -51,6 +55,10 @@ export default function UpdateProfile() {
       <ProfileBox as="form" onSubmit={handleSubmit(handleUpdateProfile)}>
         <label>
           <Text size="sm">Foto de perfil </Text>
+          <Avatar
+            src={session.data?.user.avatar_url}
+            alt={session.data?.user.name}
+          />
         </label>
 
         <label>
@@ -70,7 +78,13 @@ export default function UpdateProfile() {
   );
 }
 
-export const getServerSideProps = async ({ req, res }) => {
+import { GetServerSidePropsContext } from 'next';
+import { useRouter } from 'next/router';
+
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext,
+) => {
+  const { req, res } = context;
   const session = await unstable_getServerSession(
     req,
     res,
@@ -80,7 +94,6 @@ export const getServerSideProps = async ({ req, res }) => {
   // Se existir session, garanta que user.image nunca será undefined
   if (session && session.user) {
     session.user.image = session.user.image ?? null;
-    console.log('Session:', session);
   }
 
   return {
