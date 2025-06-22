@@ -2,6 +2,9 @@ import { Avatar, Heading, Text } from '@ignite-ui/react';
 import { Container, UserHeader } from './styles';
 import { prisma } from '@/src/lib/prisma';
 import { GetStaticPaths, GetStaticProps } from 'next';
+import { ScheduleForm } from './ScheduleForm';
+import { get } from 'http';
+import { getWeekDays } from '@/src/utils/get-week-days';
 
 interface ScheduleProps {
   user: {
@@ -12,6 +15,7 @@ interface ScheduleProps {
 }
 
 export default function Schedule({ user }: ScheduleProps) {
+  const weekDays = getWeekDays({ short: true });
   return (
     <Container>
       <UserHeader>
@@ -19,6 +23,8 @@ export default function Schedule({ user }: ScheduleProps) {
         <Heading> {user.name} </Heading>
         <Text>{user.bio}</Text>
       </UserHeader>
+
+      <ScheduleForm />
     </Container>
   );
 }
